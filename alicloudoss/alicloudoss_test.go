@@ -14,6 +14,7 @@ const (
 	Endpoint        = "xxx.com"
 	AccessKeyId     = "xxx"
 	AccessKeySecret = "xxx"
+	BucketName      = "sillyhat-blog"
 )
 
 func TestListBuckets(t *testing.T) {
@@ -28,13 +29,13 @@ func TestListBuckets(t *testing.T) {
 func TestUploadImage(t *testing.T) {
 	//uploadFiles := []string{"/Users/shikuanxu/Downloads/images/flutter01/bash-profile.png",""}
 	alicloud := &AliCloud{Endpoint: Endpoint, AccessKeyId: AccessKeyId, AccessKeySecret: AccessKeySecret}
-	err := alicloud.UploadImage("sillyhat-blog", "/Users/shikuanxu/Downloads/images/flutter01/bash-profile.png")
+	outputFile, err := alicloud.UploadImage(BucketName, "/Users/shikuanxu/Downloads/images/flutter01/bash-profile.png")
 	assert.Nil(t, err)
+	fmt.Println(outputFile)
 }
 
 func TestUploadImageFromFolder(t *testing.T) {
 	folder := "/Users/shikuanxu/Downloads/images/flutter01/"
-	bucketName := "sillyhat-blog"
 	alicloud := &AliCloud{Endpoint: Endpoint, AccessKeyId: AccessKeyId, AccessKeySecret: AccessKeySecret}
 	files, err := ioutil.ReadDir(folder)
 	assert.Nil(t, err)
@@ -42,8 +43,9 @@ func TestUploadImageFromFolder(t *testing.T) {
 		if f.Name() == ".DS_Store" {
 			continue
 		}
-		err := alicloud.UploadImage(bucketName, folder+f.Name())
+		outputFile, err := alicloud.UploadImage(BucketName, folder+f.Name())
 		assert.Nil(t, err)
+		fmt.Println(outputFile)
 	}
 }
 
@@ -58,6 +60,6 @@ func TestCreateFile(t *testing.T) {
 func TestSetBucketReferer(t *testing.T) {
 	referers := []string{"http://test.com", "http://*.test.com", "*.console.aliyun.com"}
 	alicloud := &AliCloud{Endpoint: Endpoint, AccessKeyId: AccessKeyId, AccessKeySecret: AccessKeySecret}
-	err := alicloud.SetBucketReferer("sillyhat-blog", referers)
+	err := alicloud.SetBucketReferer(BucketName, referers)
 	assert.Nil(t, err)
 }

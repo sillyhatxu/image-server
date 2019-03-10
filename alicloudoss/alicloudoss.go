@@ -59,23 +59,24 @@ func (ali AliCloud) ListBuckets() (*oss.ListBucketsResult, error) {
 	return &lsRes, nil
 }
 
-func (ali AliCloud) UploadImage(bucketName, uploadFile string) error {
+func (ali AliCloud) UploadImage(bucketName, uploadFile string) (string, error) {
 	client, err := getClient(ali.Endpoint, ali.AccessKeyId, ali.AccessKeySecret)
 	if err != nil {
 		log.Error("Get oss client error.", err)
-		return err
+		return "", err
 	}
 	bucket, err := client.Bucket(bucketName)
 	if err != nil {
 		log.Errorf("Get bucket [%v] error.%v", bucketName, err)
-		return err
+		return "", err
 	}
-	err = bucket.PutObjectFromFile(createFile(uploadFile), uploadFile)
+	outputFile := createFile(uploadFile)
+	err = bucket.PutObjectFromFile(outputFile, uploadFile)
 	if err != nil {
 		log.Errorf("Upload image [%v] to bucket [%v] error.%v", uploadFile, bucketName, err)
-		return err
+		return "", err
 	}
-	return nil
+	return outputFile, nil
 }
 
 func (ali AliCloud) SetBucketReferer(bucketName string, referers []string) error {
