@@ -13,11 +13,36 @@ func InitialAPI() {
 	router := gin.Default()
 	stockRouterGroup := router.Group("/server-image")
 	{
-		stockRouterGroup.POST("/upload", upload)
+		stockRouterGroup.POST("/upload/file", uploadFile)
+		stockRouterGroup.POST("/upload/url", uploadURL)
 	}
 	_ = router.Run(config.Conf.Http.Listen)
 }
 
-func upload(context *gin.Context) {
+func uploadFile(context *gin.Context) {
+
+	message := c.PostForm("message")
+	nick := c.DefaultPostForm("nick", "anonymous")
+
+	c.JSON(200, gin.H{
+		"status":  "posted",
+		"message": message,
+		"nick":    nick,
+	})
+
+	context.JSON(http.StatusOK, response.Success(nil))
+}
+
+func uploadURL(context *gin.Context) {
+
+	message := c.PostForm("message")
+	nick := c.DefaultPostForm("nick", "anonymous")
+
+	c.JSON(200, gin.H{
+		"status":  "posted",
+		"message": message,
+		"nick":    nick,
+	})
+
 	context.JSON(http.StatusOK, response.Success(nil))
 }
