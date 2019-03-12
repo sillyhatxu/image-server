@@ -1,6 +1,6 @@
 package dto
 
-type CreateCardRequest struct {
+type UploadFileDTO struct {
 	TokenId string `json:"token_id"`
 
 	StripeCustomerId string `json:"stripe_customer_id"`
@@ -10,4 +10,8 @@ type CreateCardRequest struct {
 	Email string `json:"email"`
 
 	IsThreeDSecure bool `form:"is_three_d_secure" json:"is_three_d_secure"`
+}
+
+type UploadURLDTO struct {
+	URL string `json:"url"`
 }
