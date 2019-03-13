@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sillyhatxu/sillyhat-cloud-utils/cache"
+	"github.com/sillyhatxu/sillyhat-cloud-utils/uuid"
 	"github.com/sillyhatxu/sillyhat-cloud-web/jwt"
 	log "github.com/sirupsen/logrus"
 	"image-server/alicloudoss"
@@ -23,18 +24,19 @@ func InitialAPI() {
 	router.Use(HandlerInterceptorAdapter())
 	router.Use(gin.LoggerWithFormatter(Logger))
 	router.Use(gin.Recovery())
-	loginRouterGroup := router.Group("/server-image/login")
+	loginRouterGroup := router.Group("/image-server/login")
 	{
 		loginRouterGroup.POST("/", login)
 	}
 	//stockRouterGroup := router.Group("/server-image/upload").Use(AuthRequired())
-	stockRouterGroup := router.Group("/server-image")
+	stockRouterGroup := router.Group("/image-server")
 	{
 		stockRouterGroup.POST("/upload-file", uploadFile)
 		stockRouterGroup.POST("/upload-multi-file", uploadFileMultipart)
 		stockRouterGroup.POST("/upload-url", uploadURL)
+		stockRouterGroup.POST("/upload-post", uploadImageByUrl)
 	}
-	userRouterGroup := router.Group("/server-image/users").Use(AuthRequired())
+	userRouterGroup := router.Group("/image-server/users").Use(AuthRequired())
 	{
 		userRouterGroup.GET("/", getUserList)
 		userRouterGroup.GET("/{id}", getUserById)
@@ -188,4 +190,18 @@ func uploadURL(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, response.Success(outputFile))
+}
+
+func uploadImageByUrl(context *gin.Context) {
+	var requestBody dto.UploadURLDTO
+	err := context.ShouldBindJSON(&requestBody)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if requestBody.URL == "www.error.com" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "testerror"})
+		return
+	}
+	context.JSON(http.StatusOK, response.Success(uuid.UUID()))
 }
