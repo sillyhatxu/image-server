@@ -5,6 +5,7 @@ import (
 	"github.com/sillyhatxu/sillyhat-cloud-utils/encryption/hash"
 	"github.com/sillyhatxu/sillyhat-cloud-utils/uuid"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -59,7 +60,7 @@ func (ali AliCloud) ListBuckets() (*oss.ListBucketsResult, error) {
 	return &lsRes, nil
 }
 
-func (ali AliCloud) UploadImage(bucketName, uploadFile string) (string, error) {
+func (ali AliCloud) UploadImageFromPath(bucketName, uploadFile string) (string, error) {
 	client, err := getClient(ali.Endpoint, ali.AccessKeyId, ali.AccessKeySecret)
 	if err != nil {
 		log.Error("Get oss client error.", err)
@@ -72,6 +73,26 @@ func (ali AliCloud) UploadImage(bucketName, uploadFile string) (string, error) {
 	}
 	outputFile := createFile(uploadFile)
 	err = bucket.PutObjectFromFile(outputFile, uploadFile)
+	if err != nil {
+		log.Errorf("Upload image [%v] to bucket [%v] error.%v", uploadFile, bucketName, err)
+		return "", err
+	}
+	return outputFile, nil
+}
+
+func (ali AliCloud) UploadImageFromFile(bucketName, uploadFileName string, uploadFile io.Reader) (string, error) {
+	client, err := getClient(ali.Endpoint, ali.AccessKeyId, ali.AccessKeySecret)
+	if err != nil {
+		log.Error("Get oss client error.", err)
+		return "", err
+	}
+	bucket, err := client.Bucket(bucketName)
+	if err != nil {
+		log.Errorf("Get bucket [%v] error.%v", bucketName, err)
+		return "", err
+	}
+	outputFile := createFile(uploadFileName)
+	err = bucket.PutObject(outputFile, uploadFile)
 	if err != nil {
 		log.Errorf("Upload image [%v] to bucket [%v] error.%v", uploadFile, bucketName, err)
 		return "", err

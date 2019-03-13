@@ -3,15 +3,16 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sillyhatxu/sillyhat-cloud-utils/cache"
 	"github.com/sillyhatxu/sillyhat-cloud-web/jwt"
 	log "github.com/sirupsen/logrus"
+	"image-server/alicloudoss"
 	"image-server/api/dto"
 	"image-server/config"
 	"image-server/response"
 	"image-server/service"
 	"image-server/token"
 	"net/http"
-	"sillyhat-cloud-utils/cache"
 	"time"
 )
 
@@ -27,10 +28,11 @@ func InitialAPI() {
 		loginRouterGroup.POST("/", login)
 	}
 	//stockRouterGroup := router.Group("/server-image/upload").Use(AuthRequired())
-	stockRouterGroup := router.Group("/server-image/upload")
+	stockRouterGroup := router.Group("/server-image")
 	{
-		stockRouterGroup.POST("/file", uploadFile)
-		stockRouterGroup.POST("/url", uploadURL)
+		stockRouterGroup.POST("/upload-file", uploadFile)
+		stockRouterGroup.POST("/upload-multi-file", uploadFileMultipart)
+		stockRouterGroup.POST("/upload-url", uploadURL)
 	}
 	userRouterGroup := router.Group("/server-image/users").Use(AuthRequired())
 	{
@@ -122,16 +124,48 @@ func getUserById(context *gin.Context) {
 	context.JSON(http.StatusOK, response.Success(nil))
 }
 
+/*
+curl -X POST http://localhost:8080/server-image/upload-file \
+  -F "file=@/Users/shikuanxu/Downloads/images/course-outline.png" \
+  -H "Content-Type: multipart/form-data"
+*/
 func uploadFile(context *gin.Context) {
-	// Multipart form
+	fileHeader, err := context.FormFile("file")
+	if err != nil {
+		context.JSON(http.StatusOK, response.Success(err.Error()))
+		return
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		context.JSON(http.StatusOK, response.Success(err.Error()))
+		return
+	}
+	alicloud := &alicloudoss.AliCloud{Endpoint: config.Conf.AliCloud.Endpoint, AccessKeyId: config.Conf.AliCloud.AccessKeyId, AccessKeySecret: config.Conf.AliCloud.AccessKeySecret}
+	uploadPath, err := alicloud.UploadImageFromFile(config.Conf.AliCloud.ImageBlogBucketName, fileHeader.Filename, file)
+	// Upload the file to specific dst.
+	// c.SaveUploadedFile(file, dst)
+	context.JSON(http.StatusOK, response.Success(uploadPath))
+}
+
+/*
+curl -X POST http://localhost:8080/server-image/upload-multi-file \
+  -F "file=@/Users/shikuanxu/Downloads/images/course-outline.png" \
+  -F "file=@/Users/shikuanxu/Downloads/images/create-scrapy-project.png" \
+  -F "file=@/Users/shikuanxu/Downloads/images/widget-tree-for-this-ui.png" \
+  -H "Content-Type: multipart/form-data"
+*/
+func uploadFileMultipart(context *gin.Context) {
 	form, err := context.MultipartForm()
 	if err != nil {
 		context.JSON(http.StatusOK, response.Success(err.Error()))
 		return
 	}
-	files := form.File["file[]"]
+	files := form.File["file"]
 	for _, file := range files {
+		file.Open()
 		log.Println(file.Filename)
+		// Upload the file to specific dst.
+		// c.SaveUploadedFile(file, dst)
 	}
 	context.JSON(http.StatusOK, response.Success(""))
 }

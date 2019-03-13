@@ -29,7 +29,7 @@ func TestListBuckets(t *testing.T) {
 func TestUploadImage(t *testing.T) {
 	//uploadFiles := []string{"/Users/shikuanxu/Downloads/images/flutter01/bash-profile.png",""}
 	alicloud := &AliCloud{Endpoint: Endpoint, AccessKeyId: AccessKeyId, AccessKeySecret: AccessKeySecret}
-	outputFile, err := alicloud.UploadImage(BucketName, "/Users/shikuanxu/Downloads/images/flutter01/bash-profile.png")
+	outputFile, err := alicloud.UploadImageFromPath(BucketName, "/Users/shikuanxu/Downloads/images/flutter01/bash-profile.png")
 	assert.Nil(t, err)
 	fmt.Println(outputFile)
 }
@@ -43,7 +43,7 @@ func TestUploadImageFromFolder(t *testing.T) {
 		if f.Name() == ".DS_Store" {
 			continue
 		}
-		outputFile, err := alicloud.UploadImage(BucketName, folder+f.Name())
+		outputFile, err := alicloud.UploadImageFromPath(BucketName, folder+f.Name())
 		assert.Nil(t, err)
 		fmt.Println(outputFile)
 	}

@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	cfgFile := flag.String("c", "config.conf", "configuration file")
+	cfgFile := flag.String("c", "config", "configuration file")
 	flag.Parse()
 	config.ParseConfig(*cfgFile)
 }
