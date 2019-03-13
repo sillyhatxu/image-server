@@ -27,10 +27,15 @@ type alicloud struct {
 	AccessKeySecret     string `toml:"access_key_secret"`
 }
 
+type environment struct {
+	TempPath string `toml:"temp_path"`
+}
+
 type config struct {
-	Http     http     `toml:"http"`
-	MysqlDB  mysqlDB  `toml:"mysql_db"`
-	AliCloud alicloud `toml:"alicloud"`
+	Http        http        `toml:"http"`
+	MysqlDB     mysqlDB     `toml:"mysql_db"`
+	AliCloud    alicloud    `toml:"alicloud"`
+	Environment environment `toml:"environment"`
 }
 
 func ParseConfig(configFile string) {

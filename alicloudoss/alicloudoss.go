@@ -5,9 +5,15 @@ import (
 	"github.com/sillyhatxu/sillyhat-cloud-utils/encryption/hash"
 	"github.com/sillyhatxu/sillyhat-cloud-utils/uuid"
 	log "github.com/sirupsen/logrus"
+	"image-server/constants"
+	"image-server/db"
+	"image-server/utils"
 	"io"
+	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -18,6 +24,14 @@ type AliCloud struct {
 	Endpoint        string
 	AccessKeyId     string
 	AccessKeySecret string
+}
+
+func writeLog(uploadFile, outputFile string) {
+	logjson := `{"upload_file": "` + uploadFile + `","output_file": "` + outputFile + `","upload_time": "` + time.Now().Format("2006-01-02 15:04:05") + `"}`
+	err := db.Log(constants.LOG_TYP_UPLOAD_IMAGE, logjson)
+	if err != nil {
+		log.Errorf("insert log error.%v", err)
+	}
 }
 
 func getClient(Endpoint string, AccessKeyId string, AccessKeySecret string) (*oss.Client, error) {
@@ -77,6 +91,7 @@ func (ali AliCloud) UploadImageFromPath(bucketName, uploadFile string) (string, 
 		log.Errorf("Upload image [%v] to bucket [%v] error.%v", uploadFile, bucketName, err)
 		return "", err
 	}
+	writeLog(uploadFile, outputFile)
 	return outputFile, nil
 }
 
@@ -97,7 +112,49 @@ func (ali AliCloud) UploadImageFromFile(bucketName, uploadFileName string, uploa
 		log.Errorf("Upload image [%v] to bucket [%v] error.%v", uploadFile, bucketName, err)
 		return "", err
 	}
+	writeLog(uploadFileName, outputFile)
 	return outputFile, nil
+}
+
+func getSuffix(url string) string {
+	suffix := filepath.Ext(url)
+	if strings.ToUpper(suffix) == ".JPG" || strings.ToUpper(suffix) == ".JPEG" || strings.ToUpper(suffix) == ".PNG" || strings.ToUpper(suffix) == ".GIF" {
+		return suffix
+	}
+	return ".jpeg"
+}
+
+func tempDownloadImage(url, tempPath string) (string, error) {
+	err := utils.CheckFolder(tempPath)
+	if err != nil {
+		return "", err
+	}
+	response, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+	outputFile := tempPath + "/" + uuid.UUID() + getSuffix(url)
+	file, err := os.Create(outputFile)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	_, err = io.Copy(file, response.Body)
+	if err != nil {
+		return "", err
+	}
+	return outputFile, nil
+}
+
+func (ali AliCloud) UploadImageFromURL(bucketName, url, tempPath string) (string, error) {
+	filePath, err := tempDownloadImage(url, tempPath)
+	if err != nil {
+		log.Errorf("Get bucket [%v] error.%v", bucketName, err)
+		return "", err
+	}
+	defer os.Remove(filePath)
+	return ali.UploadImageFromPath(bucketName, filePath)
 }
 
 func (ali AliCloud) SetBucketReferer(bucketName string, referers []string) error {

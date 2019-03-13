@@ -1,15 +1,9 @@
 package dto
 
-type UploadFileDTO struct {
-	TokenId string `json:"token_id"`
+type MultiFileDTO struct {
+	UploadFile string `json:"upload_file"`
 
-	StripeCustomerId string `json:"stripe_customer_id"`
-
-	ReturnURL string `json:"return_url"`
-
-	Email string `json:"email"`
-
-	IsThreeDSecure bool `form:"is_three_d_secure" json:"is_three_d_secure"`
+	OutputFile string `json:"output_file"`
 }
 
 type UploadURLDTO struct {

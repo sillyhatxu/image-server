@@ -160,17 +160,32 @@ func uploadFileMultipart(context *gin.Context) {
 		context.JSON(http.StatusOK, response.Success(err.Error()))
 		return
 	}
-	files := form.File["file"]
-	for _, file := range files {
-		file.Open()
-		log.Println(file.Filename)
-		// Upload the file to specific dst.
-		// c.SaveUploadedFile(file, dst)
+	fileHeaders := form.File["file"]
+	result := make([]dto.MultiFileDTO, len(fileHeaders))
+	for index, fileHeader := range fileHeaders {
+		file, err := fileHeader.Open()
+		if err != nil {
+			context.JSON(http.StatusOK, response.Success(err.Error()))
+			return
+		}
+		alicloud := &alicloudoss.AliCloud{Endpoint: config.Conf.AliCloud.Endpoint, AccessKeyId: config.Conf.AliCloud.AccessKeyId, AccessKeySecret: config.Conf.AliCloud.AccessKeySecret}
+		outputFile, err := alicloud.UploadImageFromFile(config.Conf.AliCloud.ImageBlogBucketName, fileHeader.Filename, file)
+		result[index] = *&dto.MultiFileDTO{UploadFile: fileHeader.Filename, OutputFile: outputFile}
 	}
-	context.JSON(http.StatusOK, response.Success(""))
+	context.JSON(http.StatusOK, response.Success(result))
 }
 
 func uploadURL(context *gin.Context) {
-
-	context.JSON(http.StatusOK, response.Success(nil))
+	var requestBody dto.UploadURLDTO
+	err := context.ShouldBindJSON(&requestBody)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	outputFile, err := service.UploadFileByURL(requestBody.URL)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, response.Success(outputFile))
 }

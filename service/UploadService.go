@@ -1,5 +1,6 @@
 package service
 
-func UploadFile() {
+func UploadFileByURL(url string) (string, error) {
 
+	return "", nil
 }
