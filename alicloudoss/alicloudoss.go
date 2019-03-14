@@ -43,21 +43,18 @@ func getClient(Endpoint string, AccessKeyId string, AccessKeySecret string) (*os
 }
 
 func createFile(filename string) string {
-	year, month, day := time.Now().Date()
+	year, _, _ := time.Now().Date()
 	suffix := filepath.Ext(filename)
 	yearFolder, err := hash.HashValue32(strconv.Itoa(year))
 	if err != nil {
 		return default_image_error_folder
 	}
-	monthFolder, err := hash.HashValue32(strconv.Itoa(int(month)))
+	outputFilename := uuid.UUID()
+	filenameFolder, err := hash.HashValue32(outputFilename)
 	if err != nil {
 		return default_image_error_folder
 	}
-	dayFolder, err := hash.HashValue32(strconv.Itoa(day))
-	if err != nil {
-		return default_image_error_folder
-	}
-	return default_image_folder + "/" + yearFolder + "/" + monthFolder + "/" + dayFolder + "/" + uuid.UUID() + suffix
+	return default_image_folder + "/" + yearFolder + "/" + filenameFolder[0:2] + "/" + filenameFolder[2:4] + "/" + outputFilename + suffix
 }
 
 func (ali AliCloud) ListBuckets() (*oss.ListBucketsResult, error) {

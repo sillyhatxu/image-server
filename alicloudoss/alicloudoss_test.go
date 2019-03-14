@@ -5,9 +5,6 @@ import (
 	"github.com/sillyhatxu/mysql-client"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	"path"
-	"path/filepath"
-	"strings"
 	"testing"
 )
 
@@ -82,11 +79,11 @@ func TestUploadImageFromFolder(t *testing.T) {
 }
 
 func TestCreateFile(t *testing.T) {
-	filename := "/Users/shikuanxu/Downloads/images/flutter01/bash-profile.png"
-	fmt.Println(filepath.Ext(filename))
-	fmt.Println(strings.TrimRight(filename, filepath.Ext(filename)))
-	fmt.Println(strings.TrimSuffix(filename, path.Ext(filename)))
-	assert.EqualValues(t, createFile(filename), "/Users/shikuanxu/Downloads/images/flutter01/bash-profile")
+	filename := "/Users/shikuanxu/Downloads/images/flutter01/bash-profile.gif"
+	for i := 0; i < 100; i++ {
+		output := createFile(filename)
+		fmt.Println(output)
+	}
 }
 
 func TestSetBucketReferer(t *testing.T) {
