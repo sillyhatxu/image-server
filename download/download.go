@@ -1,6 +1,7 @@
 package download
 
 import (
+	"github.com/sillyhatxu/sillyhat-cloud-utils/uuid"
 	"image-server/utils"
 	"io"
 	"net/http"
@@ -19,7 +20,7 @@ type Image struct {
 }
 
 func getFileName() string {
-	filename := utils.UUID()
+	filename := uuid.UUID()
 	var extension = filepath.Ext(filename)
 	var name = filename[0 : len(filename)-len(extension)]
 	return name

@@ -20,12 +20,26 @@ type http struct {
 	Listen string `toml:"listen"`
 }
 
+type alicloud struct {
+	ImageBlogBucketName string `toml:"image_blog_bucket_name"`
+	Endpoint            string `toml:"endpoint"`
+	AccessKeyId         string `toml:"access_key_id"`
+	AccessKeySecret     string `toml:"access_key_secret"`
+}
+
+type environment struct {
+	TempPath string `toml:"temp_path"`
+}
+
 type config struct {
-	Http    http    `toml:"http"`
-	MysqlDB mysqlDB `toml:"mysql_db"`
+	Http        http        `toml:"http"`
+	MysqlDB     mysqlDB     `toml:"mysql_db"`
+	AliCloud    alicloud    `toml:"alicloud"`
+	Environment environment `toml:"environment"`
 }
 
 func ParseConfig(configFile string) {
+	configFile = configFile + ".conf"
 	if fileInfo, err := os.Stat(configFile); err != nil {
 		if os.IsNotExist(err) {
 			log.Panicf("configuration file %v does not exist.", configFile)
