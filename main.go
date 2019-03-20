@@ -67,7 +67,7 @@ func init() {
 	log.AddHook(&LogstashHook{writer: conn, formatter: logFormatter})
 	log.AddHook(&DefaultFieldHook{GetValue: GetValueImpl})
 
-	cfgFile := flag.String("c", "config.conf", "configuration file")
+	cfgFile := flag.String("c", "config", "configuration file")
 	flag.Parse()
 	config.ParseConfig(*cfgFile)
 }
